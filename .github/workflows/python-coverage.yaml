@@ -35,7 +35,7 @@ jobs:
   experimental-noop:
     needs: detect-changes
     if: needs.detect-changes.outputs.skip_ci == 'true'
-    runs-on: cpu
+    runs-on: ubuntu-latest
     steps:
       - run: echo "Skipping CI experimental_ops only"
 

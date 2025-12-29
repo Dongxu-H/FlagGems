@@ -9,7 +9,7 @@ on:
 
 jobs:
   detect:
-    runs-on: hopper
+    runs-on: ubuntu-latest
     outputs:
       skip_ci: ${{ steps.filter.outputs.skip_ci }}
     steps:
