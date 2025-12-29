@@ -5,13 +5,13 @@ on:
     outputs:
       skip_ci:
         description: "True if PR only modifies experimental_ops"
-        value: ${{ jobs.detect.outputs.skip_ci }}
+        value: ${{ jobs.detect.outputs.run_ci }}
 
 jobs:
   detect:
     runs-on: ubuntu-latest
     outputs:
-      skip_ci: ${{ steps.filter.outputs.skip_ci }}
+      skip_ci: ${{ steps.filter.outputs.run_ci }}
     steps:
       - uses: dorny/paths-filter@v3
         id: filter

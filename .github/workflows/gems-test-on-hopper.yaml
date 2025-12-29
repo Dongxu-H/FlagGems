@@ -39,13 +39,6 @@ jobs:
   detect-changes:
     uses: ./.github/workflows/detect-experimental-only.yaml
 
-  experimental-noop:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.run_ci != 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Skipping CI experimental_ops only"
-
   op-test-on-hopper:
     needs: detect-changes
     if: needs.detect-changes.outputs.run_ci == 'true'
