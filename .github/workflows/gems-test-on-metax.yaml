@@ -14,7 +14,6 @@ on:
       - '**/*.cmake'
       - '**/*.mk'
       - 'Makefile'
-      - '!src/flag_gems/experimental_ops/**'
   pull_request:
     branches: [ "master" ]
     paths:
@@ -28,10 +27,21 @@ on:
       - '**/*.cmake'
       - '**/*.mk'
       - 'Makefile'
-      - '!src/flag_gems/experimental_ops/**'
 
 jobs:
+  detect-changes:
+    uses: ./.github/workflows/detect-experimental-only.yaml
+
+  experimental-noop:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.skip_ci == 'true'
+    runs-on: cpp
+    steps:
+      - run: echo "Skipping CI experimental_ops only"
+
   op-test-on-metax:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.skip_ci != 'true'
     runs-on: metax
     concurrency:
       group: op-test-on-metax-${{ github.event.pull_request.number || github.ref }}

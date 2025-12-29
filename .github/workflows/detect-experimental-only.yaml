@@ -1,0 +1,23 @@
+name: Detect Experimental-Only Changes
+
+on:
+  workflow_call:
+    outputs:
+      skip_ci:
+        description: "True if PR only modifies experimental_ops"
+        value: ${{ jobs.detect.outputs.skip_ci }}
+
+jobs:
+  detect:
+    runs-on: hopper
+    outputs:
+      skip_ci: ${{ steps.filter.outputs.skip_ci }}
+    steps:
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            skip_ci:
+              - 'src/flag_gems/experimental_ops/**'
+            run_ci:
+              - '!src/flag_gems/experimental_ops/**'

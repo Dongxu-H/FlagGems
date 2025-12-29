@@ -14,7 +14,6 @@ on:
       - '**/*.cmake'
       - '**/*.mk'
       - 'Makefile'
-      - '!src/flag_gems/experimental_ops/**'
   pull_request:
     branches: [ "master" ]
     paths:
@@ -28,10 +27,21 @@ on:
       - '**/*.cmake'
       - '**/*.mk'
       - 'Makefile'
-      - '!src/flag_gems/experimental_ops/**'
 
 jobs:
+  detect-changes:
+    uses: ./.github/workflows/detect-experimental-only.yaml
+
+  experimental-noop:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.skip_ci == 'true'
+    runs-on: cpp
+    steps:
+      - run: echo "Skipping CI experimental_ops only"
+
   build-C-extension:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.skip_ci != 'true'
     runs-on: cpp
 
     steps:
