@@ -1,3 +1,4 @@
+import importlib
 import logging
 
 import torch
@@ -7,7 +8,6 @@ from flag_gems import testing  # noqa: F401
 from flag_gems import runtime
 from flag_gems.config import aten_patch_list
 from flag_gems.experimental_ops import *  # noqa: F403
-from flag_gems.experimental_ops import get_operator_mappings
 from flag_gems.fused import *  # noqa: F403
 from flag_gems.logging_utils import setup_flaggems_logging
 from flag_gems.modules import *  # noqa: F403
@@ -38,7 +38,18 @@ def enable(
     path=None,
 ):
     global current_work_registrar
-    experimental_ops_mappings = get_operator_mappings(experimental_ops)
+    experimental_ops_mappings = []
+    if experimental_ops:
+        for op_name in experimental_ops:
+            try:
+                module = importlib.import_module(
+                    f"flag_gems.experimental_ops.{op_name}"
+                )
+                op_func = getattr(module, op_name)
+                experimental_ops_mappings.append((op_name, op_func))
+            except (ImportError, AttributeError):
+                pass
+
     standard_mappings = [
         ("_flash_attention_forward", flash_attention_forward),
         ("_log_softmax", log_softmax),
@@ -360,7 +371,12 @@ def enable(
         ("conv3d.padding", conv3d),
     ]
 
-    final_mappings = standard_mappings + experimental_ops_mappings
+    experimental_keys = {item[0] for item in experimental_ops_mappings}
+    filtered_standard_mappings = [
+        item for item in standard_mappings if item[0] not in experimental_keys
+    ]
+
+    final_mappings = filtered_standard_mappings + experimental_ops_mappings
     current_work_registrar = registrar(
         tuple(final_mappings),
         user_unused_ops_list=list(set(unused or [])),
